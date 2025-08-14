@@ -1,0 +1,357 @@
+/* Root variables for consistent theming */
+:root {
+  --primary-color: #3a36db;
+  --primary-light: #eae9ff;
+  --secondary-color: #6c63ff;
+  --accent-color: #ff5757;
+  --success-color: #00c853;
+  --warning-color: #ffab00;
+  --danger-color: #ff3d71;
+  --light-bg: #f7f9fc;
+  --card-bg: #ffffff;
+  --text-primary: #2e3a59;
+  --text-secondary: #8f9bb3;
+  --border-color: #edf1f7;
+  --shadow-sm: 0 2px 5px 0 rgba(59, 65, 94, 0.1), 0 1px 1px 0 rgba(0, 0, 0, 0.07);
+  --shadow-md: 0 4px 10px 0 rgba(59, 65, 94, 0.1), 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 20px 0 rgba(59, 65, 94, 0.1), 0 3px 6px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* General Styling */
+.pii-dashboard {
+  background-color: var(--light-bg);
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Dashboard Header */
+.dashboard-header {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+  color: var(--text-primary);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.dashboard-header i {
+  color: var(--primary-color);
+}
+
+/* React Flow Customization */
+.react-flow__edge {
+  transition: opacity 0.2s ease;
+}
+
+.react-flow__edge:hover {
+  opacity: 1;
+  z-index: 1000;
+}
+
+.react-flow__edge-path {
+  stroke-opacity: 0.8;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.react-flow__edge.animated .react-flow__edge-path {
+  stroke-dasharray: 10, 2;
+  animation: flowAnimation 30s linear infinite;
+}
+
+@keyframes flowAnimation {
+  from { stroke-dashoffset: 1000; }
+  to { stroke-dashoffset: 0; }
+}
+
+.react-flow__edge-text {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--text-primary);
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05));
+}
+
+.react-flow__edge-textbg {
+  fill: white;
+  fill-opacity: 0.9;
+}
+
+.react-flow__controls {
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+}
+
+.react-flow__controls-button {
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+}
+
+.react-flow__controls-button:hover {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+.react-flow__nodes {
+  z-index: 1;
+}
+
+.react-flow__node {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.react-flow__node:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+}
+
+.react-flow__edges {
+  z-index: 2;
+}
+
+/* Node Styling */
+.node-container {
+  padding: 16px;
+  border-radius: 10px;
+  background-color: var(--card-bg);
+  transition: all 0.2s ease;
+  width: 220px;
+}
+
+.node-header {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.node-header i {
+  margin-right: 8px;
+  color: var(--primary-color);
+}
+
+.node-environment {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #ffffff;
+  background-color: var(--secondary-color);
+  padding: 3px 10px;
+  border-radius: 12px;
+  display: inline-block;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(108, 99, 255, 0.2);
+}
+
+/* Confidence Meter Premium Styling */
+.confidence-meter {
+  width: 100%;
+  height: 16px;
+  background: #f0f3f9;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+  margin-top: 10px;
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3a36db 0%, #6c63ff 100%);
+  border-radius: 8px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.confidence-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
+}
+
+.confidence-meter span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* Edge Label Styling */
+.edge-label {
+  background-color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 11px;
+}
+
+.pii-type {
+  font-weight: 600;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.instance-count {
+  color: var(--text-secondary);
+  font-size: 9px;
+}
+
+/* DataTable Styling */
+.data-section .p-datatable {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.p-datatable .p-datatable-thead > tr > th {
+  background-color: var(--light-bg);
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 1rem;
+  border-color: var(--border-color);
+  font-size: 0.875rem;
+}
+
+.p-datatable .p-datatable-tbody > tr > td {
+  padding: 0.875rem 1rem;
+  border-color: var(--border-color);
+}
+
+.p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) {
+  background-color: var(--light-bg);
+}
+
+.p-datatable .p-datatable-tbody > tr:hover {
+  background-color: var(--primary-light);
+}
+
+.p-paginator {
+  background-color: var(--light-bg);
+  border-color: var(--border-color);
+  padding: 0.5rem;
+}
+
+.p-paginator .p-paginator-element {
+  border-radius: 4px;
+  margin: 0 0.125rem;
+  min-width: 2.25rem;
+  height: 2.25rem;
+}
+
+.p-paginator .p-paginator-element.p-highlight {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Flow Visualization Container */
+.flow-visualization {
+  background-color: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  height: 70vh;
+  border: 1px solid var(--border-color);
+}
+
+/* Dropdown Enhancement */
+.p-dropdown {
+  border-radius: 8px;
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.p-dropdown:hover, .p-dropdown:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(58, 54, 219, 0.1);
+}
+
+.p-dropdown-panel {
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  border: none;
+  overflow: hidden;
+}
+
+.p-dropdown-item {
+  padding: 0.75rem 1rem;
+  transition: background-color 0.2s ease;
+}
+
+.p-dropdown-item:hover {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+/* Button Enhancement */
+.p-button {
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.p-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(58, 54, 219, 0.15);
+}
+
+.p-button-text {
+  color: var(--text-primary);
+}
+
+.p-button-text:hover {
+  background-color: var(--primary-light);
+  color: var(--primary-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .dashboard-header {
+    padding: 1rem;
+  }
+  
+  .dashboard-content, .data-section {
+    padding: 0.5rem;
+  }
+  
+  .flow-visualization {
+    height: 50vh;
+  }
+}

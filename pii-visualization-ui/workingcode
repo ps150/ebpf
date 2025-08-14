@@ -1,0 +1,298 @@
+import React, { useState, useEffect } from 'react';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Dropdown } from 'primereact/dropdown';
+import { ReactFlow, Controls, Background, ReactFlowProvider } from 'reactflow';
+import axios from 'axios';
+import { PrimeReactProvider } from 'primereact/api';
+import dagre from 'dagre';
+import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/primereact.min.css';
+import 'primeicons/primeicons.css';
+import 'reactflow/dist/style.css';
+import './index.css';
+
+// Automatic layout function using dagre
+const getLayoutedElements = (nodes, edges, direction = 'LR') => {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
+  dagreGraph.setGraph({ rankdir: direction });
+
+  // Add nodes to the graph
+  nodes.forEach(node => {
+    dagreGraph.setNode(node.id, { width: 220, height: 100 });
+  });
+
+  // Add edges to the graph
+  edges.forEach(edge => {
+    dagreGraph.setEdge(edge.source, edge.target);
+  });
+
+  // Calculate layout
+  dagre.layout(dagreGraph);
+
+  // Update node positions
+  const layoutedNodes = nodes.map(node => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+    return {
+      ...node,
+      position: {
+        x: nodeWithPosition.x - 110, // Half of node width
+        y: nodeWithPosition.y - 50,  // Half of node height
+      },
+    };
+  });
+
+  return { nodes: layoutedNodes, edges };
+};
+
+function PIIFlowDashboard() {
+  const [piiInstances, setPIIInstances] = useState([]);
+  const [services, setServices] = useState([]);
+  const [selectedServiceNode, setSelectedServiceNode] = useState(null);
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
+  const [uniqueServices, setUniqueServices] = useState([]);
+  const [allEdges, setAllEdges] = useState([]);
+  const [allNodes, setAllNodes] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        axios.defaults.baseURL = 'http://localhost:8080';
+        const [servicesRes, piiRes, flowsRes] = await Promise.all([
+          axios.get('/api/services'),
+          axios.get('/api/pii-instances'),
+          axios.get('/api/pii-flows')
+        ]);
+
+        const servicesData = servicesRes.data;
+        const piiData = piiRes.data;
+        const flowsData = flowsRes.data;
+
+        setUniqueServices(servicesData.map(service => ({
+          label: `${service.serviceName} (${service.environment})`,
+          value: service.serviceName
+        })));
+
+        setServices(servicesData);
+        setPIIInstances(piiData);
+
+        // Create nodes for each service
+        const serviceNodes = servicesData.map(service => ({
+          id: `service-${service.serviceId}`,
+          // Initial position will be updated by layout algorithm
+          position: { x: 0, y: 0 },
+          data: { 
+            label: (
+              <div className="node-container">
+                <div className="node-header">
+                  <i className="pi pi-cloud mr-2"></i>
+                  {service.serviceName}
+                </div>
+                <div className="node-environment">
+                  {service.environment.toUpperCase()}
+                </div>
+                <div className="confidence-meter">
+                  <div className="confidence-fill" style={{ width: `${service.piiInstanceCount * 10}%` }}>
+                    <span>{service.piiInstanceCount} PII</span>
+                  </div>
+                </div>
+              </div>
+            )
+          },
+          style: {
+            backgroundColor: service.environment === 'prod' ? '#f8f9fa' : '#e9ecef',
+            borderRadius: '8px',
+            border: '2px solid ' + (service.environment === 'prod' ? '#4CAF50' : '#ffc107'),
+            padding: '15px',
+            width: '220px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }
+        }));
+
+        // Create edges for each flow with distinct visual styles per PII type
+        const initialEdges = flowsData.map(flow => {
+          const sourceService = servicesData.find(s => s.serviceName === flow.sourceService);
+          const destService = servicesData.find(s => s.serviceName === flow.destinationService);
+          
+          if (!sourceService || !destService) return null;
+          
+          const sourceNodeId = `service-${sourceService.serviceId}`;
+          const targetNodeId = `service-${destService.serviceId}`;
+          
+          // Determine edge style based on PII type
+          const edgeStyle = {
+            email: {
+              type: 'default',
+              stroke: '#4CAF50',
+              strokeWidth: 3,
+              strokeDasharray: '5 5'
+            },
+            phone: {
+              type: 'smoothstep',
+              stroke: '#0288D1',
+              strokeWidth: 3,
+              strokeDasharray: '3 3'
+            }
+          };
+          
+          const style = edgeStyle[flow.piiType] || edgeStyle.email;
+          
+          return {
+            id: `flow-${flow.flowId}`,
+            source: sourceNodeId,
+            target: targetNodeId,
+            type: style.type,
+            label: (
+              <div className="edge-label">
+                <span className="pii-type">{flow.piiType}</span>
+                <span className="instance-count">{flow.instanceCount} instances</span>
+              </div>
+            ),
+            animated: true,
+            style: { 
+              stroke: style.stroke,
+              strokeWidth: style.strokeWidth,
+              strokeDasharray: style.strokeDasharray
+            }
+          };
+        }).filter(Boolean); // Filter out null edges
+
+        setAllEdges(initialEdges);
+        setAllNodes(serviceNodes);
+        
+        // Apply automatic layout
+        const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+          serviceNodes,
+          initialEdges
+        );
+        
+        setNodes(layoutedNodes);
+        setEdges(layoutedEdges);
+
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (!selectedServiceNode) {
+      // No service selected, show all nodes and edges with layout
+      const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+        allNodes,
+        allEdges
+      );
+      setNodes(layoutedNodes);
+      setEdges(layoutedEdges);
+      return;
+    }
+
+    const selectedService = services.find(s => s.serviceName === selectedServiceNode);
+    if (!selectedService) return;
+    
+    const selectedNodeId = `service-${selectedService.serviceId}`;
+    
+    // Find all nodes connected to the selected service
+    const connectedNodeIds = new Set([selectedNodeId]);
+    
+    allEdges.forEach(edge => {
+      if (edge.source === selectedNodeId) {
+        connectedNodeIds.add(edge.target);
+      } else if (edge.target === selectedNodeId) {
+        connectedNodeIds.add(edge.source);
+      }
+    });
+    
+    // Filter nodes and edges
+    const filteredNodes = allNodes.filter(node => connectedNodeIds.has(node.id));
+    const filteredEdges = allEdges.filter(edge => 
+      connectedNodeIds.has(edge.source) && connectedNodeIds.has(edge.target)
+    );
+    
+    // Apply layout to the filtered nodes and edges
+    const { nodes: layoutedNodes, edges: layoutedEdges } = getLayoutedElements(
+      filteredNodes,
+      filteredEdges
+    );
+    
+    setNodes(layoutedNodes);
+    setEdges(layoutedEdges);
+  }, [selectedServiceNode, services, allEdges, allNodes]);
+
+  return (
+    <PrimeReactProvider>
+      <div className="pii-dashboard">
+        <div className="dashboard-header p-4 shadow-3">
+          <h1 className="text-3xl font-bold mb-4">
+            <i className="pi pi-shield mr-3"></i>
+            Enterprise PII Flow Monitor
+          </h1>
+          <Dropdown 
+            value={selectedServiceNode} 
+            options={uniqueServices} 
+            onChange={(e) => setSelectedServiceNode(e.value)} 
+            placeholder="Select Service Node" 
+            showClear 
+            filter 
+            className="w-full md:w-30rem"
+          />
+        </div>
+
+        <div className="dashboard-content p-4">
+          <div className="flow-visualization border-round shadow-2">
+            <ReactFlowProvider>
+              <ReactFlow 
+                nodes={nodes} 
+                edges={edges} 
+                fitView
+                nodesDraggable={false}
+              >
+                <Background gap={32} color="#e9ecef" />
+                <Controls 
+                  className="bg-white border-round shadow-2"
+                  style={{ padding: '8px' }}
+                />
+              </ReactFlow>
+            </ReactFlowProvider>
+          </div>
+        </div>
+
+        <div className="data-section p-4">
+          <div className="surface-card p-4 border-round shadow-2">
+            <DataTable 
+              value={piiInstances} 
+              paginator 
+              rows={10}
+              stripedRows
+              responsiveLayout="scroll"
+            >
+              <Column field="piiType" header="Type" sortable filter />
+              <Column field="category" header="Value" sortable filter />
+              <Column field="sourceService" header="Source" sortable filter />
+              <Column field="destinationService" header="Destination" sortable filter />
+              <Column 
+                header="Confidence" 
+                body={(data) => (
+                  <div className="confidence-meter">
+                    <div 
+                      className="confidence-fill" 
+                      style={{ width: `${data.confidence * 100}%` }}
+                    >
+                      <span>{Math.round(data.confidence * 100)}%</span>
+                    </div>
+                  </div>
+                )}
+              />
+            </DataTable>
+          </div>
+        </div>
+      </div>
+    </PrimeReactProvider>
+  );
+}
+
+export default PIIFlowDashboard;
