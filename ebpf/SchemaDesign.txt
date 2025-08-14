@@ -1,0 +1,210 @@
+1. PI_Types Table (Updated)
+sql
+CREATE TABLE pi_types (
+    pi_type_id SERIAL PRIMARY KEY,
+    pi_type_name VARCHAR(100) NOT NULL,
+    description TEXT,
+    criticality_level INTEGER NOT NULL CHECK (criticality_level BETWEEN 1 AND 5),
+    data_retention_period INTERVAL,
+    requires_user_consent BOOLEAN DEFAULT FALSE,
+    detection_regex TEXT
+    );
+
+2. Servers Table (Unchanged)
+sql
+CREATE TABLE servers (
+    server_id SERIAL PRIMARY KEY,
+    server_name VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    UNIQUE(ip_address)
+);
+
+3. HTTP_Requests Table (Updated)
+sql
+CREATE TABLE http_requests (
+    request_id SERIAL PRIMARY KEY,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    process_name VARCHAR(255) NOT NULL,
+    pid INTEGER NOT NULL,
+    http_method VARCHAR(10) NOT NULL,
+    url_path TEXT NOT NULL,
+    host VARCHAR(255),
+    payload_size INTEGER,
+    payload TEXT,
+    is_request BOOLEAN NOT NULL,
+    source_server_id INTEGER REFERENCES servers(server_id),
+    destination_server_id INTEGER REFERENCES servers(server_id),
+    analyzed BOOLEAN DEFAULT FALSE
+);
+
+4. Request_Headers Table (Unchanged)
+sql
+CREATE TABLE request_headers (
+    header_id SERIAL PRIMARY KEY,
+    request_id INTEGER REFERENCES http_requests(request_id),
+    header_name VARCHAR(255) NOT NULL,
+    header_value TEXT
+);
+
+5. PI_Instances Table (Updated)
+sql
+CREATE TABLE pi_instances (
+    pi_instance_id SERIAL PRIMARY KEY,
+    request_id INTEGER REFERENCES http_requests(request_id),
+    pi_type_id INTEGER REFERENCES pi_types(pi_type_id),
+    pi_value TEXT,
+    user_consent_obtained BOOLEAN DEFAULT FALSE,
+    detection_confidence FLOAT CHECK (detection_confidence BETWEEN 0 AND 1)
+);
+
+6. PI_Flow Table (Updated)
+sql
+CREATE TABLE pi_flow (
+    flow_id SERIAL PRIMARY KEY,
+    pi_instance_id INTEGER REFERENCES pi_instances(pi_instance_id),
+    source_request_id INTEGER REFERENCES http_requests(request_id),
+    destination_request_id INTEGER REFERENCES http_requests(request_id),
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    risk_score FLOAT
+);
+
+
+Explanation of Changes
+PI_Types Table:
+Added detection_regex for identifying potential PI in payloads.
+Added validation_regex for validating the format of detected PI.
+HTTP_Requests Table:
+Added analyzed flag to track which requests have been processed for PI detection.
+PI_Instances Table:
+Added detection_confidence to indicate the confidence level of PI detection.
+PI_Flow Table:
+Added risk_score to quantify the risk associated with each data flow.
+Usage Example
+Let's insert some sample data to demonstrate the usage:
+sql
+-- Insert PI Types with regex patterns
+INSERT INTO pi_types (pi_type_name, description, criticality_level, data_retention_period, requires_encryption, requires_user_consent, regulatory_framework, detection_regex, validation_regex)
+VALUES 
+('email', 'User email address', 3, INTERVAL '2 years', true, true, 'GDPR', 
+ '\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', 
+ '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
+('phone_number', 'User phone number', 4, INTERVAL '1 year', true, true, 'CCPA', 
+ '\b\d{3}[-.]?\d{3}[-.]?\d{4}\b', 
+ '^\d{3}-\d{3}-\d{4}$'),
+('credit_card', 'Credit card number', 5, INTERVAL '30 days', true, true, 'PCI-DSS', 
+ '\b(?:\d{4}[-\s]?){3}\d{4}\b', 
+ '^(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13}|3(?:0[0-5]|[68][0-9])[0-9]{11}|6(?:011|5[0-9]{2})[0-9]{12}|(?:2131|1800|35\d{3})\d{11})$');
+
+-- Insert a request
+INSERT INTO http_requests (process_name, pid, http_method, url_path, host, payload_size, payload, is_request, source_server_id, destination_server_id)
+VALUES ('process1', 1001, 'POST', '/api/payment', 'example.com', 200, 'payload with email john@example.com and credit card 4111-1111-1111-1111', true, 1, 2)
+RETURNING request_id;
+
+-- Simulate PI detection and insertion
+INSERT INTO pi_instances (request_id, pi_type_id, pi_value, location_in_request, is_encrypted, user_consent_obtained, detection_confidence)
+VALUES 
+(1, (SELECT pi_type_id FROM pi_types WHERE pi_type_name = 'email'), 'john@example.com', 'payload', true, true, 0.95),
+(1, (SELECT pi_type_id FROM pi_types WHERE pi_type_name = 'credit_card'), '4111-1111-1111-1111', 'payload', true, true, 0.99);
+
+-- Track PI flow
+INSERT INTO pi_flow (pi_instance_id, source_request_id, destination_request_id, complies_with_policy, risk_score)
+VALUES 
+(1, 1, 1, true, 0.3),
+(2, 1, 1, true, 0.7);
+
+-- Mark request as analyzed
+UPDATE http_requests SET analyzed = true WHERE request_id = 1;
+Improved PI Detection Query
+Here's a query that could be used to detect PI in unanalyzed requests:
+sql
+WITH detected_pi AS (
+    SELECT 
+        hr.request_id,
+        pt.pi_type_id,
+        pt.pi_type_name,
+        pt.criticality_level,
+        regexp_matches(hr.payload, pt.detection_regex, 'g') AS detected_values
+    FROM 
+        http_requests hr
+        CROSS JOIN pi_types pt
+    WHERE 
+        NOT hr.analyzed
+        AND hr.payload ~ pt.detection_regex
+)
+INSERT INTO pi_instances (request_id, pi_type_id, pi_value, location_in_request, detection_confidence)
+SELECT 
+    request_id,
+    pi_type_id,
+    detected_values[1] AS pi_value,
+    'payload' AS location_in_request,
+    CASE 
+        WHEN detected_values[1] ~ (SELECT validation_regex FROM pi_types WHERE pi_type_id = detected_pi.pi_type_id) THEN 0.95
+        ELSE 0.7
+    END AS detection_confidence
+FROM 
+    detected_pi;
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
+-- Core Tables
+CREATE TABLE services (
+    service_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    service_name VARCHAR(255) NOT NULL UNIQUE,
+    environment VARCHAR(50) CHECK (environment IN ('production', 'staging', 'dev')),
+    owner VARCHAR(255),
+    description TEXT
+);
+
+CREATE TABLE http_transactions (
+    transaction_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    timestamp TIMESTAMPTZ NOT NULL,
+    source_service UUID REFERENCES services(service_id),
+    dest_service UUID REFERENCES services(service_id),
+    source_ip INET,
+    source_port INTEGER,
+    dest_ip INET,
+    dest_port INTEGER,
+    http_method VARCHAR(10),
+    http_path TEXT,
+    payload TEXT,
+    headers JSONB,
+    direction VARCHAR(8) CHECK (direction IN ('request', 'response')),
+    correlation_id UUID
+);
+
+CREATE TABLE pii_types (
+    pii_type_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    type_name VARCHAR(100) UNIQUE NOT NULL,
+    category VARCHAR(50) CHECK (category IN ('personal', 'financial', 'health', 'technical')),
+    regex_pattern TEXT,
+    description TEXT
+);
+
+CREATE TABLE pii_instances (
+    pii_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    transaction_id UUID REFERENCES http_transactions(transaction_id),
+    pii_type UUID REFERENCES pii_types(pii_type_id),
+    raw_value TEXT NOT NULL,
+    normalized_value TEXT,
+    context JSONB,
+    first_seen TIMESTAMPTZ DEFAULT NOW(),
+    last_seen TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE pii_flows (
+    flow_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_pii UUID REFERENCES pii_instances(pii_id),
+    dest_pii UUID REFERENCES pii_instances(pii_id),
+    hop_number INTEGER,
+    timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Indexes for UI Performance
+CREATE INDEX idx_transactions_time ON http_transactions USING brin(timestamp);
+CREATE INDEX idx_pii_value ON pii_instances USING gin(raw_value gin_trgm_ops);
+CREATE INDEX idx_flow_links ON pii_flows(source_pii, dest_pii);

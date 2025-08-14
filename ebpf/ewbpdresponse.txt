@@ -1,0 +1,119 @@
+
+Now I am able to get the request and response payload
+sudo python3 http_trace_copy.py
+Starting HTTP traffic capture... Press Ctrl+C to exit
+
+------------------------------------------------------------
+ HTTP Request Detected at 2025-01-22 09:26:30 
+Process: curl
+PID: 31423
+Payload Size: 870 bytes
+------------------------------------------------------------
+POST /api/users/continents HTTP/1.1
+Host: localhost:8080
+User-Agent: curl/7.88.1
+Accept: */*
+Content-Type: text/plain
+Content-Length: 724
+
+Hello World, How are you doing? here is a virtual machine in linux kernel that would take the compiled binary of your ebpf program, inspect and verify it, and if everything is okey, finally it would load it into itself. Kernel is very careful and strict about what it’s accepting into itself, for example it would not accept any program that is doing an infinite loop. another example of strictness would be that the kernel would not allow a code that has not done some extra checks, see this example ( you can find it in the ebpf-golang-devcontainer repository mentioned above in ./ebpf/counter.c, anyway I have taken these examples originally from ebpf-go.dev which i’ll tell you more about in the end of the article):
+============================================================
+
+------------------------------------------------------------
+ HTTP Request Detected at 2025-01-22 09:26:30 
+Process: reactor-http-ep
+PID: 30925
+Payload Size: 166 bytes
+------------------------------------------------------------
+GET /continents HTTP/1.1
+accept-encoding: gzip
+user-agent: ReactorNetty/1.1.22
+host: dummy-json.mock.beeceptor.com
+accept: */*
+Content-Type: application/json
+
+
+============================================================
+
+------------------------------------------------------------
+ HTTP Request Detected at 2025-01-22 09:26:30 
+Process: reactor-http-ep
+PID: 30925
+Payload Size: 2048 bytes
+------------------------------------------------------------
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Content-Length: 2013
+Content-Type: application/json
+Date: Wed, 22 Jan 2025 08:52:08 GMT
+Vary: Accept-Encoding
+X-Beeceptor-Rule-Id: 1y7akc8rdlgi
+
+[
+  {
+    "code": "AF",
+    "name": "Africa",
+    "areaSqKm": 30370000,
+    "population": 1340598000,
+    "lines": ["Equator", "Prime Meridian"],
+    "countries": 54,
+    "oceans": ["Atlantic Ocean, Indian Ocean"],
+    "developedCountries": ["South Africa", "Egypt", "Nigeria"]
+  },
+  {
+    "code": "AN",
+    "name": "Antarctica",
+    "areaSqKm": 14000000,
+    "population": 1000,
+    "lines": ["Antarctic Circle", "180th Meridian"],
+    "countries": 0,
+    "oceans": ["Southern Ocean"],
+    "developedCountries": [] 
+  },
+  {
+    "code": "AS",
+    "name": "Asia",
+    "areaSqKm": 44579000,
+    "population": 4641055000,
+    "lines": ["Equator", "Tropic of Cancer"],
+    "countries": 49,
+    "oceans": ["Indian Ocean", "Pacific Ocean"],
+    "developedCountries": ["Japan", "South Korea", "Singapore", "United Arab Emirates"]
+  },
+  {
+    "code": "EU",
+    "name": "Europe",
+    "areaSqKm": 10180000,
+    "population": 747636000,
+    "lines": ["Prime Meridian", "Arctic Circle"],
+    "countries": 44,
+    "oceans": ["Atlantic Ocean", "Arctic Ocean"],
+    "developedCountries": ["Germany", "United Kingdom", "France", "Italy", "Spain"]
+  },
+  {
+    "code": "NA",
+    "name": "North America",
+    "areaSqKm": 24709000,
+    "population": 579750000,
+    "lines": ["Tropic of Cancer", "Arctic Circle"],
+    "countries": 23,
+    "oceans": ["Atlantic Ocean", "Pacific Ocean", "Arctic Ocean"],
+    "developedCountries": ["United States", "Canada", "Mexico"]
+  },
+  {
+    "code": "OC",
+    "name": "Oceania",
+    "areaSqKm": 8500000,
+    "population": 43155000,
+    "lines": ["Tropic of Capricorn", "180th Meridian"],
+    "countries": 14,
+    "oceans": ["Pacific Ocean"],
+    "developedCountries": ["Australia", "New Zealand"]
+  },
+  {
+    "code": "SA",
+    "name": "South America",
+    "areaSqKm": 17840000,
+    "population": 426768000,
+    "lines": ["Equat
+============================================================

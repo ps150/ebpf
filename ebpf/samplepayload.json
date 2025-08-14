@@ -1,0 +1,112 @@
+{
+    "event_id": "evt_abc123xyz789",
+    "timestamp": "2025-01-05T13:30:00Z",
+    "agent_info": {
+        "version": "1.0.0",
+        "hostname": "prod-server-01",
+        "agent_id": "agent_xyz789"
+    },
+    "service_context": {
+        "name": "payment-service",
+        "host": "10.0.1.100",
+        "port": 8080,
+        "environment": "production",
+        "container": {
+            "id": "c123456789",
+            "name": "payment-pod-abc123",
+            "namespace": "finance"
+        },
+        "process": {
+            "pid": 1234,
+            "name": "node",
+            "binary_path": "/usr/local/bin/node",
+            "cmdline": "node server.js"
+        }
+    },
+    "network_context": {
+        "correlation_id": "ebpf-abc-123",
+        "protocol": "TCP",
+        "source": {
+            "ip": "10.0.1.100",
+            "port": 45123,
+            "service_name": "payment-service"
+        },
+        "destination": {
+            "ip": "10.0.1.101",
+            "port": 8080,
+            "service_name": "user-service"
+        },
+        "connection_start": "2025-01-05T13:30:00Z",
+        "connection_end": "2025-01-05T13:30:01Z",
+        "duration_ms": 150
+    },
+    "http_context": {
+        "request": {
+            "method": "POST",
+            "url": "/api/v1/users",
+            "headers": {
+                "content-type": "application/json",
+                "content-length": "256",
+                "host": "api.example.com"
+            },
+            "body": {
+                "user": {
+                    "name": "John Doe",
+                    "email": "john@example.com",
+                    "phone": "1234567890",
+                    "aadhar": "123456789012"
+                }
+            }
+        },
+        "response": {
+            "status_code": 200,
+            "headers": {
+                "content-type": "application/json",
+                "content-length": "128"
+            },
+            "body": {
+                "user_id": "usr_123",
+                "email": "john@example.com"
+            }
+        }
+    },
+    "pii_detections": {
+        "request": [
+            {
+                "type": "email",
+                "field_path": "$.request.body.user.email",
+                "data_hash": "a1b2c3d4e5f6",
+                "is_forwarded": true
+            },
+            {
+                "type": "phone",
+                "field_path": "$.request.body.user.phone",
+                "data_hash": "b2c3d4e5f6a1",
+                "is_forwarded": false
+            },
+            {
+                "type": "aadhar",
+                "field_path": "$.request.body.user.aadhar",
+                "data_hash": "c3d4e5f6a1b2",
+                "is_forwarded": false
+            }
+        ],
+        "response": [
+            {
+                "type": "email",
+                "field_path": "$.response.body.email",
+                "data_hash": "a1b2c3d4e5f6",
+                "is_forwarded": true
+            }
+        ]
+    },
+    "error_context": {
+        "has_error": false,
+        "error": null
+    },
+    "metadata": {
+        "ebpf_hook_type": "tcp_connect",
+        "kernel_version": "5.15.0",
+        "collection_method": "kprobe"
+    }
+}

@@ -1,0 +1,47 @@
+Ebpf (Go and Ebpf) : 
+    1. Ebpf with http/https call -  POC is Done
+    2. Ebpf with java application -  POC is done
+    3. Ebpf expreiments with other language - pending
+    4. Ebpf experiments with db, log server activities -  pending  ( Splunk / open observe)
+    5. Detail understanding of ebpf and how to write production ready code - In progress
+
+
+Database schema design (Postgress) - in progress 
+    1. Postgress db setup - Done
+    2. Metadata table schema - done
+    3. PII data table - done
+    4. Server detail table - Done
+    5. Graph data - in progress
+    6. PII regex table - in progress ( There can be false positive )
+    7. Explore time series database - Pending
+    8. Get PII data from data wharehouse /cold storgae
+
+Ingestion service (Spring boot) - pending
+    1. Create a spring boot application end rest endpoint - Done
+    2. mine the PII data - Pending
+    3. Core business logic to ingest data
+    4. Create the graph - Pending (ReactJS)
+
+9 Feb
+Goals : 
+1. Ebpf (Go and Ebpf) --- 3-4 Days -- Inprogress complete by 15th
+4. Setup the testing environment - 2 days ---- Done
+2. Database schema design (Postgress) - in progress -  1 week - 15th Jan
+3. Ingestion service (Spring boot) - pending  21st jan --- 4 days
+1. Colleact the data from the server/vm  - Done 
+2. Get PII data from data wharehouse/cold storgae - Pending - 3 days 24th Jan 
+3. Fetch the PII data 4days 28th Jan
+4. Prepare the graph data (Edge and vertex) 1 week 4th Feb
+5. Normalise the data and persist into db 7th Feb 4 days
+6. UI dashboard for Data flow - 3 days 9th Feb
+
+
+Stretch Goal :
+1. Provide the delete capabilities
+2. Implement the industry wise capabilities while purging the data
+
+
+
+
+
+

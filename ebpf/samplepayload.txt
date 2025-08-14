@@ -1,0 +1,47 @@
+{
+  "transaction_id": "tx_ebpf_001",
+  "timestamp": "2025-02-05T09:15:23Z",
+  "process_name": "user-service",
+  "pid": 4567,
+  "http_method": "POST",
+  "url_path": "/api/users",
+  "host": "user-service.prod",
+  "payload": "{\"name\":\"Alice Smith\",\"email\":\"alice@example.com\",\"phone\":\"+1-555-123-4567\"}",
+  "payload_size": 189,
+  "is_request": true,
+  "source_ip": "192.168.1.100",
+  "destination_ip": "10.0.1.5"
+}
+
+
+{
+  "transaction_id": "tx_ebpf_002",
+  "timestamp": "2025-02-05T09:17:45Z",
+  "process_name": "payment-service",
+  "pid": 7890,
+  "http_method": "POST",
+  "url_path": "/api/payments",
+  "host": "payment-service.prod",
+  "payload": "{\"card_number\":\"4111-1111-1111-1111\",\"expiry\":\"12/25\",\"cvv\":\"123\"}",
+  "payload_size": 256,
+  "is_request": true,
+  "source_ip": "10.0.2.10",
+  "destination_ip": "10.0.1.20"
+}
+
+{
+  "transaction_id": "tx_ebpf_003",
+  "timestamp": "2025-02-05T09:20:10Z",
+  "process_name": "geo-service",
+  "pid": 2345,
+  "http_method": "GET",
+  "url_path": "/user/123",
+  "host": "geo-service.staging",
+  "payload": "{\"email\":\"alice@example.com\",\"location\":\"New York\",\"ssn\":\"123-45-6789\"}",
+  "payload_size": 345,
+  "is_request": false,
+  "source_ip": "10.0.3.20",
+  "destination_ip": "192.168.1.100"
+}
+
+

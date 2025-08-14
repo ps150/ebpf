@@ -1,0 +1,23 @@
+
+
+
+EBPF program :
+Request payload : 
+{
+    "personalInfoData" : {
+        "phoneNumber" : "XXXXXXX",
+        "email" : "XXXXX@gmail.com",
+        "adharCardNumber" : "XXXXXXXXXX",
+        "panCard" : "XXXXX"
+    },
+    "ipAddress" : "XXXXXX",
+    "timestamp" : "XXXXXX",
+    "serviceName" : "XXXXXX",
+    "data" : {
+
+    }
+}
+
+
+
+Personal infor : phone, email, adhar (Regex), panCard (Regex)
